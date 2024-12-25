@@ -4,7 +4,8 @@
 using namespace boost::ut;
 using namespace boost::ut::bdd;
 
-#include "classes.hpp"
+#include "str.hpp"
+#include <functional>
 
 enum class methods
 {
@@ -12,21 +13,37 @@ enum class methods
     b,
 };
 
-template <std::size_t N>
-struct str
+struct erase_me
 {
-    char buffer[N]{}; // NOLINT
+    int *target;
 
   public:
-    constexpr str(const char (&str)[N]) // NOLINT
+    [[nodiscard]] int a() const
     {
-        std::copy(str, str + N, buffer); // NOLINT
+        return (*target = 10);
     }
 
-  public:
-    constexpr bool operator==(const str &other) const
+    static double b(int &target)
     {
-        return std::equal(buffer, buffer + N, other.buffer); // NOLINT
+        target = 20;
+        return 3.14;
+    }
+};
+
+struct erase_me_too
+{
+    std::reference_wrapper<int> target;
+
+  public:
+    [[nodiscard]] int a() const
+    {
+        return (target.get() = 30);
+    }
+
+    static double b(int &target)
+    {
+        target = 40;
+        return 2.71;
     }
 };
 

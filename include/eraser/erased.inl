@@ -30,9 +30,9 @@ namespace eraser
         {
             vtable<Interface> rtn;
 
-            auto make = [&]<class M, class R, class... Ts>(std::type_identity<std::tuple<M, R, std::tuple<Ts...>>>)
+            auto make = [&]<typename M, typename... Ts>(std::type_identity<std::tuple<M, std::tuple<Ts...>>>)
             {
-                return +[](void *value, Ts... args) -> R
+                return +[](void *value, Ts... args) -> M::result
                 {
                     return M::func(*reinterpret_cast<T *>(value), std::forward<Ts>(args)...);
                 };
@@ -41,12 +41,9 @@ namespace eraser
             auto unpack = [&]<std::size_t I>(std::integral_constant<std::size_t, I>)
             {
                 using current   = Interface::template at<I>;
-                using signature = current::signature;
+                using arguments = current::arguments;
 
-                using result    = signature::result;
-                using arguments = signature::arguments;
-
-                return reinterpret_cast<void *>(make(std::type_identity<std::tuple<current, result, arguments>>{}));
+                return reinterpret_cast<void *>(make(std::type_identity<std::tuple<current, arguments>>{}));
             };
 
             [&]<std::size_t... Is>(std::index_sequence<Is...>)
@@ -105,10 +102,8 @@ namespace eraser
     auto erased<Interface, Storage>::invoke(Ts &&...args) const
     {
         using method    = Interface::template method<Name>;
-        using signature = method::signature;
-
-        using arguments = signature::arguments;
-        using result    = signature::result;
+        using arguments = method::arguments;
+        using result    = method::result;
 
         static_assert(std::constructible_from<arguments, Ts...>);
 

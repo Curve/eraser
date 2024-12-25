@@ -33,18 +33,16 @@ struct str
 // NOLINTNEXTLINE
 suite<"erased"> erased_suite = []()
 {
-    using eraser::signature;
     using eraser::method;
-
-    using eraser::make_erased;
     using eraser::erased;
+    using eraser::make_erased;
 
     int target{};
 
     {
-        using interface = eraser::interface<                                                                     //
-            method<methods::a, [](auto &self) { return self.a(); }, signature<int()>>,                           //
-            method<methods::b, [](auto &self, int &target) { return self.b(target); }, signature<double(int &)>> //
+        using interface = eraser::interface<                                                          //
+            method<methods::a, [](auto &self) { return self.a(); }, int()>,                           //
+            method<methods::b, [](auto &self, int &target) { return self.b(target); }, double(int &)> //
             >;
 
         erased<interface> e1 = make_erased<interface, erase_me>(&target);
@@ -64,9 +62,9 @@ suite<"erased"> erased_suite = []()
     }
 
     {
-        using interface = eraser::interface<                                                                   //
-            method<str{"a"}, [](auto &self) { return self.a(); }, signature<int()>>,                           //
-            method<str{"b"}, [](auto &self, int &target) { return self.b(target); }, signature<double(int &)>> //
+        using interface = eraser::interface<                                                        //
+            method<str{"a"}, [](auto &self) { return self.a(); }, int()>,                           //
+            method<str{"b"}, [](auto &self, int &target) { return self.b(target); }, double(int &)> //
             >;
 
         erased<interface> e1 = make_erased<interface, erase_me>(&target);

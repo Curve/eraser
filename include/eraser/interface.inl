@@ -1,11 +1,10 @@
 #pragma once
 
 #include "interface.hpp"
-#include <concepts>
 
 namespace eraser
 {
-    template <impl::method... Methods>
+    template <traits::method... Methods>
     template <auto Name, auto I>
     consteval auto interface<Methods...>::find()
     {

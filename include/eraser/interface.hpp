@@ -1,26 +1,12 @@
 #pragma once
 
-#include "method.hpp"
+#include "traits/method.hpp"
+
+#include <tuple>
 
 namespace eraser
 {
-    namespace impl
-    {
-        template <typename T>
-        struct is_method : std::false_type
-        {
-        };
-
-        template <auto Func, auto Name, typename Signature>
-        struct is_method<method<Func, Name, Signature>> : std::true_type
-        {
-        };
-
-        template <typename T>
-        concept method = is_method<T>::value;
-    } // namespace impl
-
-    template <impl::method... Methods>
+    template <traits::method... Methods>
     struct interface
     {
         using methods              = std::tuple<Methods...>;

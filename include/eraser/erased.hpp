@@ -1,6 +1,8 @@
 #pragma once
 
 #include "traits/interface.hpp"
+#include "traits/utils.hpp"
+
 #include "storage/unique.hpp"
 
 #include <utility>

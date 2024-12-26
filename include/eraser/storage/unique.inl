@@ -5,8 +5,8 @@
 namespace eraser::storage
 {
     template <typename T>
-    template <traits::except<unique<T>> U>
-    unique<T>::unique(U &&value) : m_value{std::make_unique<U>(std::forward<U>(value))}
+    template <typename U, typename... Us>
+    unique<T>::unique(std::in_place_type_t<U>, Us &&...args) : m_value{std::make_unique<U>(std::forward<Us>(args)...)}
     {
     }
 

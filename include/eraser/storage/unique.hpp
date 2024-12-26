@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../traits/utils.hpp"
-
 #include <memory>
 
 namespace eraser::storage
@@ -12,8 +10,8 @@ namespace eraser::storage
         std::unique_ptr<T> m_value;
 
       public:
-        template <traits::except<unique<T>> U>
-        unique(U &&);
+        template <typename U, typename... Us>
+        unique(std::in_place_type_t<U>, Us &&...);
 
       public:
         T *operator->() const;

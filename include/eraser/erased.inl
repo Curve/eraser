@@ -17,15 +17,15 @@ namespace eraser
         {
             vtable<Interface> rtn;
 
-            auto make = [&]<typename M, typename R, typename... Ts>(utils::identities<M, R, std::tuple<Ts...>>)
+            static auto make = []<typename M, typename R, typename... Ts>(utils::identities<M, R, std::tuple<Ts...>>)
             {
                 return +[](void *value, Ts... args) -> R
                 {
-                    return M::func(*reinterpret_cast<T *>(value), std::forward<Ts>(args)...);
+                    return M::func(*static_cast<T *>(value), args...);
                 };
             };
 
-            auto unpack = [&]<auto I>(utils::constant<I>)
+            static auto unpack = []<auto I>(utils::constant<I>)
             {
                 using current = Interface::template at<I>;
 
@@ -79,14 +79,16 @@ namespace eraser
 
     template <traits::interface Interface, template <typename> typename Storage>
     template <traits::except<erased<Interface, Storage>> T>
-    erased<Interface, Storage>::erased(T &&value) : m_value{typename base::template model<T>{std::forward<T>(value)}}
+    erased<Interface, Storage>::erased(T &&value)
+        : m_value{std::in_place_type_t<typename base::template model<T>>{}, std::forward<T>(value)}
     {
     }
 
     template <traits::interface Interface, template <typename> typename Storage>
     template <typename T, typename... Ts>
     erased<Interface, Storage>::erased(std::in_place_type_t<T>, Ts &&...args)
-        : m_value{typename base::template model<T>{std::in_place_t{}, std::forward<Ts>(args)...}}
+        : m_value{std::in_place_type_t<typename base::template model<T>>{}, std::in_place_t{},
+                  std::forward<Ts>(args)...}
     {
     }
 
@@ -111,6 +113,6 @@ namespace eraser
     template <typename Interface, typename T, typename... Ts>
     auto make_erased(Ts &&...args)
     {
-        return erased<Interface>(std::in_place_type_t<T>{}, std::forward<Ts>(args)...);
+        return erased<Interface>{std::in_place_type_t<T>{}, std::forward<Ts>(args)...};
     }
 } // namespace eraser

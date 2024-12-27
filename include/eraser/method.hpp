@@ -1,7 +1,5 @@
 #pragma once
 
-#include <tuple>
-
 namespace eraser
 {
     template <auto Name, auto Func, typename Signature>
@@ -14,7 +12,6 @@ namespace eraser
         static constexpr auto func = Func;
 
       public:
-        using result    = R;
-        using arguments = std::tuple<Ts...>;
+        using signature = R(Ts...);
     };
 } // namespace eraser

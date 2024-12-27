@@ -9,13 +9,31 @@
 
 namespace eraser
 {
-    template <traits::interface Interface, template <typename> typename Storage = storage::unique>
-    struct erased
+    namespace impl
     {
-        struct base;
+        struct concept_;
+
+        class base
+        {
+            friend struct concept_;
+
+          private:
+            void *m_value;
+            void *const *m_vtable;
+
+          public:
+            [[nodiscard]] void *value() const;
+            [[nodiscard]] void *const *vtable() const;
+        };
+    } // namespace impl
+
+    template <typename Interface, template <typename> typename Storage = storage::unique>
+    struct erased : impl::base
+    {
+        static_assert(traits::interface<Interface>);
 
       private:
-        Storage<base> m_value;
+        Storage<impl::concept_> m_value;
 
       public:
         template <traits::except<erased<Interface, Storage>> T>

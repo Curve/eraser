@@ -3,36 +3,54 @@
 #include "erased.hpp"
 #include "utils.hpp"
 
+#include <functional>
 #include <array>
 
 namespace eraser
 {
     namespace impl
     {
-        template <typename Interface>
-        using vtable = std::array<void *, Interface::size>;
+        struct concept_
+        {
+            concept_(base &base, void *value, void *const *vtable)
+            {
+                base.m_value  = value;
+                base.m_vtable = vtable;
+            }
+
+          public:
+            virtual ~concept_() = default;
+        };
+
+        inline void *base::value() const
+        {
+            return m_value;
+        }
+
+        inline void *const *base::vtable() const
+        {
+            return m_vtable;
+        }
 
         template <typename Interface, typename T>
         auto make_vtable()
         {
-            vtable<Interface> rtn;
+            std::array<void *, Interface::size> rtn;
 
-            static auto make = []<typename M, typename R, typename... Ts>(utils::identities<M, R, std::tuple<Ts...>>)
+            static auto make = []<typename Method, typename R, typename... Ts>(utils::identities<Method, R(Ts...)>)
             {
                 return +[](void *value, Ts... args) -> R
                 {
-                    return M::func(*static_cast<T *>(value), args...);
+                    return Method::func(*static_cast<T *>(value), std::forward<Ts>(args)...);
                 };
             };
 
             static auto unpack = []<auto I>(utils::constant<I>)
             {
-                using current = Interface::template at<I>;
+                using current   = Interface::template at<I>;
+                using signature = current::signature;
 
-                using result    = current::result;
-                using arguments = current::arguments;
-
-                return reinterpret_cast<void *>(make(utils::identities<current, result, arguments>{}));
+                return reinterpret_cast<void *>(make(utils::identities<current, signature>{}));
             };
 
             [&]<auto... Is>(std::index_sequence<Is...>)
@@ -42,72 +60,59 @@ namespace eraser
 
             return rtn;
         }
+
+        template <typename Interface, typename T>
+        class model : public concept_
+        {
+            static const inline auto vtable = impl::make_vtable<Interface, T>();
+
+          private:
+            T m_value;
+
+          public:
+            template <typename... Us>
+            model(base &base, Us &&...args)
+                : concept_{base, std::addressof(m_value), vtable.data()}, m_value{std::forward<Us>(args)...}
+            {
+            }
+
+          public:
+            ~model() override = default;
+        };
+
+        template <typename Signature, typename... Ts>
+        auto invoke(void *func, void *value, Ts &&...args)
+        {
+            using func_t = utils::prepend_arguments<Signature, void *> *;
+            return std::invoke(reinterpret_cast<func_t>(func), value, std::forward<Ts>(args)...);
+        }
     } // namespace impl
 
-    template <traits::interface Interface, template <typename> typename Storage>
-    struct erased<Interface, Storage>::base
-    {
-        template <typename T>
-        struct model;
-
-      public:
-        void *value;
-        const impl::vtable<Interface> *vtable;
-    };
-
-    template <traits::interface Interface, template <typename> typename Storage>
-    template <typename T>
-    class erased<Interface, Storage>::base::model : public base
-    {
-        static const inline auto vtable = impl::make_vtable<Interface, T>();
-
-      private:
-        T m_value;
-
-      public:
-        template <traits::except<model<T>> U>
-        model(U &&value) : base{std::addressof(m_value), std::addressof(vtable)}, m_value{std::forward<U>(value)}
-        {
-        }
-
-        template <typename... Us>
-        model(std::in_place_t, Us &&...args)
-            : base{std::addressof(m_value), std::addressof(vtable)}, m_value{std::forward<Us>(args)...}
-        {
-        }
-    };
-
-    template <traits::interface Interface, template <typename> typename Storage>
+    template <typename Interface, template <typename> typename Storage>
     template <traits::except<erased<Interface, Storage>> T>
     erased<Interface, Storage>::erased(T &&value)
-        : m_value{std::in_place_type_t<typename base::template model<T>>{}, std::forward<T>(value)}
+        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, *this, std::forward<T>(value)}
     {
     }
 
-    template <traits::interface Interface, template <typename> typename Storage>
+    template <typename Interface, template <typename> typename Storage>
     template <typename T, typename... Ts>
     erased<Interface, Storage>::erased(std::in_place_type_t<T>, Ts &&...args)
-        : m_value{std::in_place_type_t<typename base::template model<T>>{}, std::in_place_t{},
-                  std::forward<Ts>(args)...}
+        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, *this, std::forward<Ts>(args)...}
     {
     }
 
-    template <traits::interface Interface, template <typename> typename Storage>
+    template <typename Interface, template <typename> typename Storage>
     template <auto Name, typename... Ts>
     auto erased<Interface, Storage>::invoke(Ts &&...args) const
     {
-        using method = Interface::template method<Name>;
+        using method    = Interface::template method<Name>;
+        using signature = method::signature;
 
-        using result    = method::result;
-        using arguments = method::arguments;
+        static_assert(std::invocable<signature, Ts...>);
 
-        static_assert(std::constructible_from<arguments, Ts...>);
-
-        return [&]<typename... Us>(utils::identities<Us...>)
-        {
-            auto *const func = m_value->vtable->at(Interface::template index<Name>);
-            return reinterpret_cast<result (*)(void *, Us...)>(func)(m_value->value, std::forward<Ts>(args)...);
-        }(utils::identity<arguments>{});
+        auto *const entry = vtable()[Interface::template index<Name>];
+        return impl::invoke<signature>(entry, value(), std::forward<Ts>(args)...);
     }
 
     template <typename Interface, typename T, typename... Ts>

@@ -21,6 +21,5 @@ namespace eraser::traits
     } // namespace impl
 
     template <typename T>
-    // concept interface = impl::is_interface<T>::value;
-    concept interface = true;
+    concept interface = impl::is_interface<T>::value;
 } // namespace eraser::traits

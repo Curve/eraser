@@ -111,14 +111,16 @@ namespace eraser
     template <typename Interface, template <typename> typename Storage>
     template <traits::except<erased<Interface, Storage>> T>
     erased<Interface, Storage>::erased(T &&value)
-        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, *this, std::forward<T>(value)}
+        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, static_cast<impl::base &>(*this),
+                  std::forward<T>(value)}
     {
     }
 
     template <typename Interface, template <typename> typename Storage>
     template <typename T, typename... Ts>
     erased<Interface, Storage>::erased(std::in_place_type_t<T>, Ts &&...args)
-        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, *this, std::forward<Ts>(args)...}
+        : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, static_cast<impl::base &>(*this),
+                  std::forward<Ts>(args)...}
     {
     }
 

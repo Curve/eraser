@@ -76,7 +76,7 @@ namespace eraser::experimental
 
         std::ignore = setter{};
 
-        const auto *base  = static_cast<const eraser::impl::base *>(static_cast<void *>(self));
+        const auto *base  = (const eraser::impl::base *)self; // NOLINT
         auto *const entry = base->vtable()[index];
 
         return eraser::impl::invoke<signature>(entry, base->value(), std::addressof(visitor),

@@ -35,7 +35,7 @@ namespace eraser
     } // namespace impl
 
     template <typename Interface, template <typename> typename Storage = storage::unique>
-    class erased : public impl::base
+    class erased : protected impl::base
     {
         static_assert(traits::interface<Interface>);
 

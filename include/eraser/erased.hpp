@@ -43,8 +43,14 @@ namespace eraser
         Storage<impl::concept_> m_value;
 
       public:
+#ifndef __APPLE__
         template <traits::except<erased<Interface, Storage>> T>
         explicit erased(T &&);
+#else
+        template <typename T>
+        explicit erased(T &&)
+            requires traits::except<T, erased>;
+#endif
 
         template <typename T, typename... Ts>
         explicit erased(std::in_place_type_t<T>, Ts &&...);

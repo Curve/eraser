@@ -96,8 +96,14 @@ namespace eraser
     } // namespace impl
 
     template <typename Interface, template <typename> typename Storage>
+#ifndef __APPLE__
     template <traits::except<erased<Interface, Storage>> T>
     erased<Interface, Storage>::erased(T &&value)
+#else
+    template <typename T>
+    erased<Interface, Storage>::erased(T &&value)
+        requires traits::except<T, erased>
+#endif
         : m_value{std::in_place_type_t<impl::model<Interface, T>>{}, static_cast<impl::base &>(*this),
                   std::forward<T>(value)}
     {

@@ -75,7 +75,7 @@ namespace eraser::experimental
 
         void(setter{});
 
-        const auto *base  = reinterpret_cast<const eraser::impl::base *>(self);
+        const auto *base  = static_cast<const eraser::impl::base *>(static_cast<void *>(self));
         auto *const entry = base->vtable()[index];
 
         return eraser::impl::invoke<signature>(entry, base->value(), std::addressof(visitor),

@@ -86,13 +86,13 @@ namespace eraser::experimental
 
 namespace eraser
 {
-    template <typename Interface>
-    struct erased<experimental::deduce<Interface>> : Interface,
-                                                     erased<typename experimental::deduce<Interface>::interface>
+    template <typename Interface, template <typename> typename Storage>
+    class erased<experimental::deduce<Interface>, Storage>
+        : public erased<typename experimental::deduce<Interface>::interface, Storage>, public Interface
     {
-        using erased<typename experimental::deduce<Interface>::interface>::erased;
+        using erased<typename experimental::deduce<Interface>::interface, Storage>::invoke;
 
-      private:
-        using erased<typename experimental::deduce<Interface>::interface>::invoke;
+      public:
+        using erased<typename experimental::deduce<Interface>::interface, Storage>::erased;
     };
 } // namespace eraser

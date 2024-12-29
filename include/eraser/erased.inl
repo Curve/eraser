@@ -147,9 +147,9 @@ namespace eraser
         return static_cast<T *>(value());
     }
 
-    template <typename Interface, typename T, typename... Ts>
+    template <typename Interface, typename T, template <typename> typename Storage, typename... Ts>
     auto make_erased(Ts &&...args)
     {
-        return erased<Interface>{std::in_place_type_t<T>{}, std::forward<Ts>(args)...};
+        return erased<Interface, Storage>{std::in_place_type_t<T>{}, std::forward<Ts>(args)...};
     }
 } // namespace eraser

@@ -20,7 +20,7 @@ _Eraser_ is an easy, customizable, C++20 type-erasure library that supports user
   ```cmake
   CPMFindPackage(
     NAME           eraser
-    VERSION        2.0.0
+    VERSION        2.1.0
     GIT_REPOSITORY "https://github.com/Curve/eraser"
   )
   ```
@@ -29,7 +29,7 @@ _Eraser_ is an easy, customizable, C++20 type-erasure library that supports user
   ```cmake
   include(FetchContent)
 
-  FetchContent_Declare(eraser GIT_REPOSITORY "https://github.com/Curve/eraser" GIT_TAG v2.0.0)
+  FetchContent_Declare(eraser GIT_REPOSITORY "https://github.com/Curve/eraser" GIT_TAG v2.1.0)
   FetchContent_MakeAvailable(eraser)
 
   target_link_libraries(<target> cr::eraser)

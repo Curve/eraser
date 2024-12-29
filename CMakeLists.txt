@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.21)
-project(eraser LANGUAGES CXX VERSION 2.0.0)
+project(eraser LANGUAGES CXX VERSION 2.1.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(eraser_tests "Build tests" ON)
+option(eraser_tests "Build tests" OFF)
 
 # --------------------------------------------------------------------------------------------------------
 # Create library

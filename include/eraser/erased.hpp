@@ -35,7 +35,7 @@ namespace eraser
     } // namespace impl
 
     template <typename Interface, template <typename> typename Storage = storage::unique>
-    struct erased : impl::base
+    class erased : public impl::base
     {
         static_assert(traits::interface<Interface>);
 
@@ -58,7 +58,7 @@ namespace eraser
         std::optional<T *> as() const;
     };
 
-    template <typename Interface, typename T, typename... Ts>
+    template <typename Interface, typename T, template <typename> typename Storage = storage::unique, typename... Ts>
     auto make_erased(Ts &&...);
 } // namespace eraser
 

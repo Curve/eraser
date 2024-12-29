@@ -13,8 +13,8 @@ namespace eraser::experimental
 
 namespace eraser
 {
-    template <typename Interface>
-    struct erased<experimental::deduce<Interface>>;
+    template <typename Interface, template <typename> typename Storage>
+    class erased<experimental::deduce<Interface>, Storage>;
 } // namespace eraser
 
 #include "deduce.inl"

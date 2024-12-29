@@ -1,4 +1,5 @@
 #include <boost/ut.hpp>
+#include <eraser/storage/shared.hpp>
 #include <eraser/experimental/deduce.hpp>
 
 using namespace boost::ut;
@@ -28,8 +29,11 @@ suite<"deduce"> deduce_suite = []
 {
     int target{};
 
-    auto e1 = make_erased<deduce<interface>, erase_me>(&target);
+    auto e1 = make_erased<deduce<interface>, erase_me, eraser::storage::shared>(&target);
     erased<deduce<interface>> e2{erase_me_too{std::ref(target)}};
+
+    expect(std::copyable<decltype(e1)>);
+    expect(not std::copyable<decltype(e2)>);
 
     expect(eq(e1.a(), 10));
     expect(eq(target, 10));

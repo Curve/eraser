@@ -1,5 +1,6 @@
 #include <boost/ut.hpp>
 #include <eraser/erased.hpp>
+#include <eraser/storage/shared.hpp>
 
 using namespace boost::ut;
 using namespace boost::ut::bdd;
@@ -26,8 +27,11 @@ suite<"erased"> erased_suite = []()
 {
     int target{};
 
-    auto e1 = make_erased<interface, erase_me>(&target);
+    auto e1 = make_erased<interface, erase_me, eraser::storage::shared>(&target);
     erased<interface> e2{erase_me_too{std::ref(target)}};
+
+    expect(std::copyable<decltype(e1)>);
+    expect(not std::copyable<decltype(e2)>);
 
     expect(eq(e1.invoke<methods::a>(), 10));
     expect(eq(target, 10));

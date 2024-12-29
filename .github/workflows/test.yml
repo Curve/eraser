@@ -13,7 +13,7 @@ jobs:
 
       matrix:
         config: [Release, Debug]
-        type: [gcc, clang, msvc, clang-cl]
+        type: [gcc, clang, msvc, clang-cl, apple-clang]
 
         include:
           - type: gcc
@@ -32,6 +32,9 @@ jobs:
           - type: clang-cl
             os: windows-latest
             cmake_args: -T ClangCL -A x64
+
+          - type: apple-clang
+            os: macos-latest
 
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container }}

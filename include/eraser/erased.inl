@@ -3,8 +3,9 @@
 #include "erased.hpp"
 #include "utils.hpp"
 
-#include <functional>
 #include <array>
+#include <atomic>
+#include <functional>
 
 namespace eraser
 {
@@ -12,9 +13,10 @@ namespace eraser
     {
         struct concept_
         {
-            concept_(base &base, void *value, void *const *vtable)
+            concept_(base &base, void *value, std::size_t type, void *const *vtable)
             {
                 base.m_value  = value;
+                base.m_type   = type;
                 base.m_vtable = vtable;
             }
 
@@ -25,6 +27,11 @@ namespace eraser
         inline void *base::value() const
         {
             return m_value;
+        }
+
+        inline std::size_t base::type() const
+        {
+            return m_type;
         }
 
         inline void *const *base::vtable() const
@@ -61,6 +68,18 @@ namespace eraser
             return rtn;
         }
 
+        inline auto type_counter()
+        {
+            static std::atomic_size_t counter{};
+            return ++counter;
+        }
+
+        template <typename T>
+        struct type_id
+        {
+            static inline const auto value = type_counter();
+        };
+
         template <typename Interface, typename T>
         class model : public concept_
         {
@@ -72,7 +91,8 @@ namespace eraser
           public:
             template <typename... Us>
             model(base &base, Us &&...args)
-                : concept_{base, std::addressof(m_value), vtable.data()}, m_value{std::forward<Us>(args)...}
+                : concept_{base, std::addressof(m_value), type_id<T>::value, vtable.data()},
+                  m_value{std::forward<Us>(args)...}
             {
             }
 
@@ -113,6 +133,18 @@ namespace eraser
 
         auto *const entry = vtable()[Interface::template index<Name>];
         return impl::invoke<signature>(entry, value(), std::forward<Ts>(args)...);
+    }
+
+    template <typename Interface, template <typename> typename Storage>
+    template <typename T>
+    std::optional<T *> erased<Interface, Storage>::as() const
+    {
+        if (type() != impl::type_id<T>::value)
+        {
+            return std::nullopt;
+        }
+
+        return static_cast<T *>(value());
     }
 
     template <typename Interface, typename T, typename... Ts>

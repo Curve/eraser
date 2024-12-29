@@ -6,6 +6,9 @@
 #include "storage/unique.hpp"
 
 #include <utility>
+#include <cstddef>
+
+#include <optional>
 
 namespace eraser
 {
@@ -19,10 +22,14 @@ namespace eraser
 
           private:
             void *m_value;
+            std::size_t m_type;
+
+          private:
             void *const *m_vtable;
 
           public:
             [[nodiscard]] void *value() const;
+            [[nodiscard]] std::size_t type() const;
             [[nodiscard]] void *const *vtable() const;
         };
     } // namespace impl
@@ -45,6 +52,10 @@ namespace eraser
       public:
         template <auto Name, typename... Ts>
         auto invoke(Ts &&...) const;
+
+      public:
+        template <typename T>
+        std::optional<T *> as() const;
     };
 
     template <typename Interface, typename T, typename... Ts>

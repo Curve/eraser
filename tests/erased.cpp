@@ -40,4 +40,16 @@ suite<"erased"> erased_suite = []()
 
     expect(eq(e2.invoke<methods::b>(target), 2.71));
     expect(eq(target, 40));
+
+    auto u1 = e1.as<erase_me>();
+    expect(u1.has_value());
+
+    expect(eq(u1.value()->a(), 10));
+    expect(eq(target, 10));
+
+    auto u2 = e2.as<erase_me_too>();
+    expect(u2.has_value());
+
+    expect(eq(u2.value()->a(), 30));
+    expect(eq(target, 30));
 };

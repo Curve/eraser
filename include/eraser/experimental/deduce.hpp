@@ -8,7 +8,7 @@ namespace eraser::experimental
     struct deduce;
 
     template <typename Result = void, typename Func, typename Interface, typename... Ts>
-    auto call(Func &&, Interface *, Ts &&...);
+    auto call(Func &&, const Interface *, Ts &&...);
 } // namespace eraser::experimental
 
 namespace eraser

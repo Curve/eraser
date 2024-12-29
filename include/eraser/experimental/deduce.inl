@@ -62,7 +62,7 @@ namespace eraser::experimental
     };
 
     template <typename Result, typename Func, typename Interface, typename... Ts>
-    auto call(Func &&visitor, Interface *self, Ts &&...args)
+    auto call(Func &&visitor, const Interface *self, Ts &&...args)
     {
         static constexpr auto index = impl::size<Interface>();
         static constexpr auto func  = []<typename Self>(Self &&self, void *callback, Ts... args)
@@ -88,7 +88,7 @@ namespace eraser
 {
     template <typename Interface, template <typename> typename Storage>
     class erased<experimental::deduce<Interface>, Storage>
-        : public erased<typename experimental::deduce<Interface>::interface, Storage>, public Interface
+        : public Interface, public erased<typename experimental::deduce<Interface>::interface, Storage>
     {
         using erased<typename experimental::deduce<Interface>::interface, Storage>::invoke;
 

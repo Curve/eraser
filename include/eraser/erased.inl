@@ -2,9 +2,9 @@
 
 #include "erased.hpp"
 #include "utils.hpp"
+#include "id.hpp"
 
 #include <array>
-#include <atomic>
 #include <functional>
 
 namespace eraser
@@ -68,18 +68,6 @@ namespace eraser
             return rtn;
         }
 
-        inline auto type_counter()
-        {
-            static std::atomic_size_t counter{};
-            return ++counter;
-        }
-
-        template <typename T>
-        struct type_id
-        {
-            static inline const auto value = type_counter();
-        };
-
         template <typename Interface, typename T>
         class model : public concept_
         {
@@ -91,8 +79,7 @@ namespace eraser
           public:
             template <typename... Us>
             model(base &base, Us &&...args)
-                : concept_{base, std::addressof(m_value), type_id<T>::value, vtable.data()},
-                  m_value{std::forward<Us>(args)...}
+                : concept_{base, std::addressof(m_value), id_of<T>(), vtable.data()}, m_value{std::forward<Us>(args)...}
             {
             }
 
@@ -141,7 +128,7 @@ namespace eraser
     template <typename T>
     std::optional<T *> erased<Interface, Storage>::as() const
     {
-        if (type() != impl::type_id<T>::value)
+        if (type() != id_of<T>())
         {
             return std::nullopt;
         }

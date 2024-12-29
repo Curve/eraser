@@ -3,6 +3,7 @@
 #include "deduce.hpp"
 #include "../utils.hpp"
 
+#include <utility>
 #include <functional>
 
 namespace eraser::experimental
@@ -73,7 +74,7 @@ namespace eraser::experimental
         using signature = Result(void *, Ts...);
         using setter    = typename impl::storage<Interface, index>::template set<method<index, func, signature>>;
 
-        void(setter{});
+        std::ignore = setter{};
 
         const auto *base  = static_cast<const eraser::impl::base *>(static_cast<void *>(self));
         auto *const entry = base->vtable()[index];

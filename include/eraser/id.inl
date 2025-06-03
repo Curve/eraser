@@ -8,7 +8,7 @@ namespace eraser
 {
     namespace impl
     {
-        inline auto id_counter()
+        static inline auto id_counter()
         {
             static std::atomic_size_t counter{};
             return ++counter;
